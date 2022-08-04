@@ -38,7 +38,7 @@ func Init() *Object {
 	if err != nil {
 		panic(err)
 	}
-	return &Object{v.ToObject(DefaultRuntime)}
+	return ToObject(v)
 }
 
 func Change(doc *Object, message string, changeFn func(*Object)) *Object {
@@ -47,12 +47,12 @@ func Change(doc *Object, message string, changeFn func(*Object)) *Object {
 		panic("Automerge.change not a function in runtime")
 	}
 	v, err := change(goja.Undefined(), doc.Object, DefaultRuntime.ToValue(message), DefaultRuntime.ToValue(func(doc *goja.Object) {
-		changeFn(&Object{doc})
+		changeFn(ToObject(doc))
 	}))
 	if err != nil {
 		panic(err)
 	}
-	return &Object{v.ToObject(DefaultRuntime)}
+	return ToObject(v)
 }
 
 func Save(doc *Object) []byte {
@@ -104,7 +104,7 @@ func Load(data []byte) *Object {
 	if err != nil {
 		panic(err)
 	}
-	return &Object{v.ToObject(DefaultRuntime)}
+	return ToObject(v)
 }
 
 func Merge(doc1 *Object, doc2 *Object) *Object {
@@ -116,7 +116,7 @@ func Merge(doc1 *Object, doc2 *Object) *Object {
 	if err != nil {
 		panic(err)
 	}
-	return &Object{v.ToObject(DefaultRuntime)}
+	return ToObject(v)
 }
 
 func GetHistory(doc *Object) (h []map[string]map[string]interface{}) {
@@ -136,6 +136,11 @@ func GetHistory(doc *Object) (h []map[string]map[string]interface{}) {
 
 type Object struct {
 	*goja.Object
+	val goja.Value
+}
+
+func ToObject(v goja.Value) *Object {
+	return &Object{Object: v.ToObject(DefaultRuntime), val: v}
 }
 
 func (obj *Object) NewArray(items ...interface{}) *goja.Object {
@@ -147,7 +152,11 @@ func (obj *Object) NewObject() *goja.Object {
 }
 
 func (obj *Object) Get(name string) *Object {
-	return &Object{obj.Object.Get(name).ToObject(DefaultRuntime)}
+	return ToObject(obj.Object.Get(name))
+}
+
+func (obj *Object) Export() interface{} {
+	return obj.val.Export()
 }
 
 func (obj *Object) Call(name string, args ...interface{}) *Object {
@@ -163,5 +172,5 @@ func (obj *Object) Call(name string, args ...interface{}) *Object {
 	if err != nil {
 		panic(err.Error())
 	}
-	return &Object{v.ToObject(DefaultRuntime)}
+	return ToObject(v)
 }

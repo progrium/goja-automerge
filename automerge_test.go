@@ -2,6 +2,7 @@ package automerge_test
 
 import (
 	"fmt"
+	"testing"
 
 	automerge "github.com/progrium/goja-automerge"
 )
@@ -34,4 +35,17 @@ func ExampleQuickstart() {
 	d, _ := finalDoc.MarshalJSON()
 	fmt.Println(string(d))
 	// Output: {"cards":[{"done":true,"title":"Rewrite everything in Go"}]}
+}
+
+func TestObject(t *testing.T) {
+	v := automerge.DefaultRuntime.CreateObject(nil)
+	v.Set("bool", true)
+	v.Set("str", "foo")
+	o := automerge.ToObject(v)
+	if o.Get("bool").Export() != true {
+		t.Fatal("bool value not what was expected")
+	}
+	if got := o.Get("str").Export(); got != "foo" {
+		t.Fatal("str value not what was expected:", got)
+	}
 }
