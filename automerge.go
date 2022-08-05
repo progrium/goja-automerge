@@ -140,6 +140,9 @@ type Object struct {
 }
 
 func ToObject(v goja.Value) *Object {
+	if v == nil {
+		return nil
+	}
 	return &Object{Object: v.ToObject(DefaultRuntime), val: v}
 }
 
@@ -156,6 +159,9 @@ func (obj *Object) Get(name string) *Object {
 }
 
 func (obj *Object) Export() interface{} {
+	if obj.val == nil {
+		return nil
+	}
 	return obj.val.Export()
 }
 
